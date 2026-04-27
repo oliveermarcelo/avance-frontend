@@ -28,7 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${openSans.variable} ${montserrat.variable} font-sans`}>
+      <body
+        className={`${openSans.variable} ${montserrat.variable} font-sans`}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

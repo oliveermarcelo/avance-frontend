@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: avance-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: avance
+      POSTGRES_PASSWORD: avance_dev_2026
+      POSTGRES_DB: avance_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - avance-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avance -d avance_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  avance-pg-data:

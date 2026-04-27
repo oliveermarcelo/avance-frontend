@@ -1,6 +1,4 @@
-export const APP_NAME = "Avance MentorMed";
-
-export const FRAPPE_API_URL = process.env.NEXT_PUBLIC_FRAPPE_API_URL || "http://lms.localhost:8000";
+export const APP_NAME = process.env.APP_NAME || "Avance MentorMed";
 
 export const ROUTES = {
   home: "/",
@@ -13,7 +11,5 @@ export const ROUTES = {
   perfil: "/perfil",
   cursos: "/cursos",
   curso: (slug: string) => `/cursos/${slug}`,
+  admin: "/admin",
 } as const;
-
-export const JWT_COOKIE_NAME = "avance_session";
-export const JWT_EXPIRES_IN = "7d";
