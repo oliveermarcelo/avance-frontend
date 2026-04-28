@@ -247,7 +247,7 @@ export default async function CursoPage({
                   </div>
                 </div>
                 <Button asChild className="w-full" size="lg">
-                  <Link href={`/curso/${course.slug}/aula`}>
+                  <Link href={`/curso/${course.slug}/aula/${course.modules[0]?.lessons[0]?.id ?? ""}`}>
                     <PlayCircle className="mr-2 h-4 w-4" />
                     {enrollment.progress > 0 ? "Continuar curso" : "Começar curso"}
                     <ChevronRight className="ml-1 h-4 w-4" />

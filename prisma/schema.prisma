@@ -59,6 +59,7 @@ model User {
   payments          Payment[]
   lessonProgress    LessonProgress[]
   reviews           CourseReview[]
+  notes             LessonNote[]
   sessions          Session[]
   accounts          Account[]
 
@@ -198,6 +199,7 @@ model Lesson {
   resources Json?
 
   progress LessonProgress[]
+  notes LessonNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -317,4 +319,21 @@ model CourseReview {
 
   @@unique([userId, courseId])
   @@index([courseId])
+}
+
+model LessonNote {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  content   String  @db.Text
+  timestamp Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, lessonId])
+  @@index([lessonId])
 }
