@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 
 const PUBLIC_ROUTES = ["/login", "/cadastro", "/recuperar-senha"];
 const PUBLIC_PREFIXES = ["/api/auth", "/_next", "/favicon", "/assets"];
+const ADMIN_PREFIX = "/admin";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -24,6 +25,10 @@ export async function proxy(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (pathname.startsWith(ADMIN_PREFIX) && session?.user?.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/inicio", request.url));
   }
 
   return NextResponse.next();
