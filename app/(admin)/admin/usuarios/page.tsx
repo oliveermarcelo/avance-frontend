@@ -1,4 +1,5 @@
 import { UsersTable } from "@/components/admin/users-table";
+import { CreateUserButton } from "@/components/admin/create-user-button";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/admin";
 import { getUserInitials } from "@/lib/data/user";
@@ -54,22 +55,26 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="px-8 py-8">
-      <header className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-          Pessoas
-        </p>
-        <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-          <span>{stats.total} usuarios</span>
-          <span>·</span>
-          <span>{stats.active} ativos</span>
-          <span>·</span>
-          <span>{stats.students} alunos</span>
-          <span>·</span>
-          <span>{stats.instructors} instrutores</span>
-          <span>·</span>
-          <span>{stats.admins} admins</span>
+      <header className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            Pessoas
+          </p>
+          <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+            <span>{stats.total} usuarios</span>
+            <span>·</span>
+            <span>{stats.active} ativos</span>
+            <span>·</span>
+            <span>{stats.students} alunos</span>
+            <span>·</span>
+            <span>{stats.instructors} instrutores</span>
+            <span>·</span>
+            <span>{stats.admins} admins</span>
+          </div>
         </div>
+
+        <CreateUserButton />
       </header>
 
       <UsersTable users={users} currentUserId={admin.id} />

@@ -11,6 +11,7 @@ export type UserActionState = {
   message?: string;
   fieldErrors?: Record<string, string[]>;
   generatedPassword?: string;
+  createdUserId?: string;
 };
 
 const userSchema = z.object({
@@ -22,6 +23,14 @@ const userSchema = z.object({
   role: z.enum(["STUDENT", "INSTRUCTOR", "ADMIN"]),
 });
 
+const createUserSchema = z.object({
+  name: z.string().min(2, "Nome precisa de no minimo 2 caracteres").max(120),
+  email: z.string().email("E-mail invalido").max(160),
+  phone: z.string().max(40).optional().nullable().or(z.literal("")),
+  crm: z.string().max(40).optional().nullable().or(z.literal("")),
+  role: z.enum(["STUDENT", "INSTRUCTOR", "ADMIN"]),
+});
+
 function parseFormData(formData: FormData) {
   return {
     name: String(formData.get("name") ?? "").trim(),
@@ -30,6 +39,62 @@ function parseFormData(formData: FormData) {
     crm: String(formData.get("crm") ?? "").trim() || null,
     bio: String(formData.get("bio") ?? "").trim() || null,
     role: String(formData.get("role") ?? "STUDENT"),
+  };
+}
+
+function generateTempPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  let result = "";
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+export async function createUserAction(formData: FormData): Promise<UserActionState> {
+  await requireAdmin();
+
+  const parsed = createUserSchema.safeParse({
+    name: String(formData.get("name") ?? "").trim(),
+    email: String(formData.get("email") ?? "").trim().toLowerCase(),
+    phone: String(formData.get("phone") ?? "").trim() || null,
+    crm: String(formData.get("crm") ?? "").trim() || null,
+    role: String(formData.get("role") ?? "STUDENT"),
+  });
+
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const data = parsed.data;
+
+  const existing = await db.user.findUnique({ where: { email: data.email } });
+  if (existing) {
+    return { fieldErrors: { email: ["Esse e-mail ja esta em uso"] } };
+  }
+
+  const tempPassword = generateTempPassword();
+  const hashed = await hashPassword(tempPassword);
+
+  const created = await db.user.create({
+    data: {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      crm: data.crm,
+      role: data.role,
+      password: hashed,
+      isActive: true,
+      emailVerified: new Date(),
+    },
+  });
+
+  revalidatePath("/admin/usuarios");
+  return {
+    ok: true,
+    message: "Usuario criado com sucesso",
+    generatedPassword: tempPassword,
+    createdUserId: created.id,
   };
 }
 
@@ -100,15 +165,6 @@ export async function toggleUserActiveAction(formData: FormData): Promise<UserAc
   revalidatePath("/admin/usuarios");
   revalidatePath(`/admin/usuarios/${userId}`);
   return { ok: true };
-}
-
-function generateTempPassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  let result = "";
-  for (let i = 0; i < 12; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
 }
 
 export async function resetUserPasswordAction(formData: FormData): Promise<UserActionState> {
