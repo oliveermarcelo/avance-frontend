@@ -6,6 +6,7 @@ import {
   GraduationCap,
   CreditCard,
   Star,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +46,12 @@ export const adminNavSections: AdminNavSection[] = [
     items: [
       { label: "Pagamentos", href: "/admin/pagamentos", icon: CreditCard },
       { label: "Avaliacoes", href: "/admin/avaliacoes", icon: Star },
+    ],
+  },
+  {
+    label: "Sistema",
+    items: [
+      { label: "Configuracoes", href: "/admin/configuracoes/pagamento", icon: Settings },
     ],
   },
 ];
