@@ -210,14 +210,13 @@ export function EnrollCard({ course, status, progress = 0 }: EnrollCardProps) {
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   ) : (
-                    <button
-                      disabled
-                      className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-slate-200 text-sm font-semibold text-slate-500 cursor-not-allowed"
-                      title="Checkout em breve"
+                    <Link
+                      href={`/checkout/${course.slug}`}
+                      className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#C9A227] text-sm font-bold text-[#1F3A2D] transition hover:bg-[#B8932A]"
                     >
-                      <Lock className="h-4 w-4" />
-                      Checkout em breve
-                    </button>
+                      Comprar agora
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
                   )}
 
                   {status === "NOT_LOGGED_IN" && (

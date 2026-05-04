@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   QrCode,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createCheckoutAction } from "@/app/(public)/checkout/[slug]/actions";
+import { createCheckoutAction } from "@/lib/checkout-actions";
 import { cn } from "@/lib/utils";
 
 type Method = "PIX" | "CREDIT_CARD" | "BOLETO";
@@ -38,32 +38,16 @@ const methodTabs: Array<{
   icon: typeof QrCode;
   description: string;
 }> = [
-  {
-    value: "PIX",
-    label: "PIX",
-    icon: QrCode,
-    description: "Aprovacao instantanea",
-  },
-  {
-    value: "CREDIT_CARD",
-    label: "Cartao",
-    icon: CardIcon,
-    description: "Ate 12x sem juros",
-  },
-  {
-    value: "BOLETO",
-    label: "Boleto",
-    icon: FileText,
-    description: "Aprovado em 1-2 dias",
-  },
+  { value: "PIX", label: "PIX", icon: QrCode, description: "Aprovacao instantanea" },
+  { value: "CREDIT_CARD", label: "Cartao", icon: CardIcon, description: "Ate 12x sem juros" },
+  { value: "BOLETO", label: "Boleto", icon: FileText, description: "Aprovado em 1-2 dias" },
 ];
 
 function maskCpf(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 11);
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
-  if (digits.length <= 9)
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 }
 
@@ -71,8 +55,7 @@ function maskPhone(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 11);
   if (digits.length <= 2) return digits.length ? `(${digits}` : "";
   if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  if (digits.length <= 10)
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
@@ -87,10 +70,6 @@ function maskExpiry(value: string): string {
   return `${digits.slice(0, 2)}/${digits.slice(2)}`;
 }
 
-function calculateInstallment(price: number, n: number): number {
-  return price / n;
-}
-
 function formatPrice(value: number): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -100,11 +79,10 @@ function formatPrice(value: number): string {
 
 export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [method, setMethod] = useState<Method>("PIX");
-
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [cpf, setCpf] = useState("");
@@ -118,13 +96,14 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
 
   const isMockGateway = gatewayName === "MOCK";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
     const cpfDigits = cpf.replace(/\D/g, "");
     if (cpfDigits.length !== 11) {
       setError("CPF invalido. Use 11 digitos.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -149,54 +128,62 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
       }
     }
 
-    const formData = new FormData();
-    formData.append("courseId", course.id);
-    formData.append("method", method);
-    formData.append(
-      "customer",
-      JSON.stringify({
-        name,
-        email,
-        cpf: cpfDigits,
-        phone: phone.replace(/\D/g, "") || null,
-      })
-    );
+    setIsPending(true);
 
-    if (method === "CREDIT_CARD") {
-      const expiryParts = cardExpiry.split("/");
+    try {
+      const formData = new FormData();
+      formData.append("courseId", course.id);
+      formData.append("method", method);
       formData.append(
-        "card",
+        "customer",
         JSON.stringify({
-          holderName: cardHolder.trim(),
-          number: cardNumber.replace(/\D/g, ""),
-          expiryMonth: expiryParts[0],
-          expiryYear: expiryParts[1],
-          cvv: cardCvv,
-          installments,
+          name,
+          email,
+          cpf: cpfDigits,
+          phone: phone.replace(/\D/g, "") || null,
         })
       );
-    }
 
-    startTransition(async () => {
+      if (method === "CREDIT_CARD") {
+        const expiryParts = cardExpiry.split("/");
+        formData.append(
+          "card",
+          JSON.stringify({
+            holderName: cardHolder.trim(),
+            number: cardNumber.replace(/\D/g, ""),
+            expiryMonth: expiryParts[0],
+            expiryYear: expiryParts[1],
+            cvv: cardCvv,
+            installments,
+          })
+        );
+      }
+
       const result = await createCheckoutAction(formData);
+
       if (result?.redirectTo && result.ok) {
         router.push(result.redirectTo);
       } else if (result?.message) {
         setError(result.message);
+        setIsPending(false);
+      } else {
+        setError("Resposta inesperada do servidor");
+        setIsPending(false);
       }
-    });
-  };
+    } catch (err) {
+      const errorObj = err as Error;
+      setError(`Erro: ${errorObj.message}`);
+      setIsPending(false);
+    }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {isMockGateway && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-xs font-semibold text-amber-800">
-            Modo de teste ativo
-          </p>
+          <p className="text-xs font-semibold text-amber-800">Modo de teste ativo</p>
           <p className="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
-            O gateway atual e MOCK. Os pagamentos sao simulados: cartao confirma
-            instantaneamente, PIX confirma apos 3 segundos, boleto fica pendente.
+            O gateway atual e MOCK. Os pagamentos sao simulados.
           </p>
         </div>
       )}
@@ -213,50 +200,24 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="name">Nome completo</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            disabled={isPending}
-          />
+          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required disabled={isPending} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="email">E-mail</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isPending}
-            />
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isPending} />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="phone">Telefone</Label>
-            <Input
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(maskPhone(e.target.value))}
-              placeholder="(11) 99999-9999"
-              disabled={isPending}
-            />
+            <Input id="phone" value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} placeholder="(11) 99999-9999" disabled={isPending} />
           </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="cpf">CPF</Label>
-          <Input
-            id="cpf"
-            value={cpf}
-            onChange={(e) => setCpf(maskCpf(e.target.value))}
-            placeholder="000.000.000-00"
-            required
-            disabled={isPending}
-          />
+          <Input id="cpf" value={cpf} onChange={(e) => setCpf(maskCpf(e.target.value))} placeholder="000.000.000-00" required disabled={isPending} />
         </div>
       </section>
 
@@ -275,17 +236,10 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
                 disabled={isPending}
                 className={cn(
                   "flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-all",
-                  isActive
-                    ? "border-[#1F3A2D] bg-[#1F3A2D]/5"
-                    : "border-slate-200 bg-white hover:border-slate-300"
+                  isActive ? "border-[#1F3A2D] bg-[#1F3A2D]/5" : "border-slate-200 bg-white hover:border-slate-300"
                 )}
               >
-                <span
-                  className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-md",
-                    isActive ? "bg-[#1F3A2D] text-white" : "bg-slate-100 text-slate-600"
-                  )}
-                >
+                <span className={cn("flex h-9 w-9 items-center justify-center rounded-md", isActive ? "bg-[#1F3A2D] text-white" : "bg-slate-100 text-slate-600")}>
                   <Icon className="h-4 w-4" />
                 </span>
                 <div>
@@ -307,8 +261,7 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
             <div className="text-sm text-slate-700 leading-relaxed">
               <p className="font-semibold text-slate-900">Pagamento via PIX</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Apos clicar em &ldquo;Finalizar&rdquo;, voce recebera um QR code.
-                A confirmacao e instantanea apos o pagamento.
+                Apos clicar em Finalizar, voce recebera um QR code.
               </p>
             </div>
           </div>
@@ -319,73 +272,31 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
         <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-5">
           <div className="space-y-2">
             <Label htmlFor="cardNumber">Numero do cartao</Label>
-            <Input
-              id="cardNumber"
-              value={cardNumber}
-              onChange={(e) => setCardNumber(maskCard(e.target.value))}
-              placeholder="0000 0000 0000 0000"
-              autoComplete="cc-number"
-              required={method === "CREDIT_CARD"}
-              disabled={isPending}
-              className="font-mono bg-white"
-            />
+            <Input id="cardNumber" value={cardNumber} onChange={(e) => setCardNumber(maskCard(e.target.value))} placeholder="0000 0000 0000 0000" required disabled={isPending} className="font-mono bg-white" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="cardHolder">Nome do titular</Label>
-            <Input
-              id="cardHolder"
-              value={cardHolder}
-              onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-              placeholder="COMO ESTA NO CARTAO"
-              autoComplete="cc-name"
-              required={method === "CREDIT_CARD"}
-              disabled={isPending}
-              className="bg-white uppercase"
-            />
+            <Input id="cardHolder" value={cardHolder} onChange={(e) => setCardHolder(e.target.value.toUpperCase())} placeholder="COMO ESTA NO CARTAO" required disabled={isPending} className="bg-white uppercase" />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="cardExpiry">Validade</Label>
-              <Input
-                id="cardExpiry"
-                value={cardExpiry}
-                onChange={(e) => setCardExpiry(maskExpiry(e.target.value))}
-                placeholder="MM/AA"
-                autoComplete="cc-exp"
-                required={method === "CREDIT_CARD"}
-                disabled={isPending}
-                className="bg-white font-mono"
-              />
+              <Input id="cardExpiry" value={cardExpiry} onChange={(e) => setCardExpiry(maskExpiry(e.target.value))} placeholder="MM/AA" required disabled={isPending} className="bg-white font-mono" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="cardCvv">CVV</Label>
-              <Input
-                id="cardCvv"
-                value={cardCvv}
-                onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                placeholder="000"
-                autoComplete="cc-csc"
-                required={method === "CREDIT_CARD"}
-                disabled={isPending}
-                className="bg-white font-mono"
-              />
+              <Input id="cardCvv" value={cardCvv} onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="000" required disabled={isPending} className="bg-white font-mono" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="installments">Parcelas</Label>
-              <select
-                id="installments"
-                value={installments}
-                onChange={(e) => setInstallments(Number(e.target.value))}
-                disabled={isPending}
-                className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F3A2D]"
-              >
+              <select id="installments" value={installments} onChange={(e) => setInstallments(Number(e.target.value))} disabled={isPending} className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm">
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>
-                    {n}x de {formatPrice(calculateInstallment(course.price, n))}
+                    {n}x de {formatPrice(course.price / n)}
                   </option>
                 ))}
               </select>
@@ -403,8 +314,7 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
             <div className="text-sm text-slate-700 leading-relaxed">
               <p className="font-semibold text-slate-900">Pagamento via boleto</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Apos clicar em &ldquo;Finalizar&rdquo;, voce recebera o boleto.
-                A compensacao leva ate 2 dias uteis.
+                Apos clicar em Finalizar, voce recebera o boleto.
               </p>
             </div>
           </div>
@@ -428,17 +338,6 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
           </>
         )}
       </button>
-
-      <p className="text-center text-[10px] text-slate-500">
-        Ao continuar, voce concorda com os{" "}
-        <a href="/termos" target="_blank" className="font-semibold text-[#1F3A2D] hover:underline">
-          termos de uso
-        </a>
-        {" "}e a{" "}
-        <a href="/privacidade" target="_blank" className="font-semibold text-[#1F3A2D] hover:underline">
-          politica de privacidade
-        </a>
-      </p>
     </form>
   );
 }

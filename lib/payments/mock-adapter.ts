@@ -1,18 +1,13 @@
 import "server-only";
+import { db } from "@/lib/db";
 import type {
   PaymentGateway,
   CheckoutInput,
   CheckoutResult,
   PaymentStatusResult,
-  PaymentStatus,
 } from "./types";
 
-const mockTransactions = new Map<
-  string,
-  { status: PaymentStatus; createdAt: Date; paymentId: string }
->();
-
-const AUTO_CONFIRM_AFTER_MS = 3000;
+const AUTO_CONFIRM_AFTER_MS = 300000;
 
 function generateTxId(): string {
   return `mock_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -50,18 +45,7 @@ export const mockAdapter: PaymentGateway = {
   async createCheckout(input: CheckoutInput): Promise<CheckoutResult> {
     const transactionId = generateTxId();
 
-    mockTransactions.set(transactionId, {
-      status: "PENDING",
-      createdAt: new Date(),
-      paymentId: input.paymentId,
-    });
-
     if (input.method === "CREDIT_CARD") {
-      mockTransactions.set(transactionId, {
-        status: "PAID",
-        createdAt: new Date(),
-        paymentId: input.paymentId,
-      });
       return {
         ok: true,
         transactionId,
@@ -105,20 +89,39 @@ export const mockAdapter: PaymentGateway = {
   },
 
   async getPaymentStatus(transactionId: string): Promise<PaymentStatusResult> {
-    const tx = mockTransactions.get(transactionId);
+    const payment = await db.payment.findFirst({
+      where: { transactionId },
+      select: {
+        status: true,
+        method: true,
+        createdAt: true,
+        paidAt: true,
+      },
+    });
 
-    if (!tx) {
+    if (!payment) {
+      return { status: "PENDING" };
+    }
+
+    if (payment.status === "PAID") {
+      return { status: "PAID", paidAt: payment.paidAt ?? new Date() };
+    }
+
+    if (payment.status === "FAILED") {
       return { status: "FAILED" };
     }
 
-    const elapsed = Date.now() - tx.createdAt.getTime();
-
-    if (tx.status === "PENDING" && elapsed > AUTO_CONFIRM_AFTER_MS) {
-      tx.status = "PAID";
-      mockTransactions.set(transactionId, tx);
-      return { status: "PAID", paidAt: new Date() };
+    if (payment.status === "REFUNDED") {
+      return { status: "REFUNDED" };
     }
 
-    return { status: tx.status };
+    if (payment.method === "PIX") {
+      const elapsed = Date.now() - payment.createdAt.getTime();
+      if (elapsed > AUTO_CONFIRM_AFTER_MS) {
+        return { status: "PAID", paidAt: new Date() };
+      }
+    }
+
+    return { status: "PENDING" };
   },
 };

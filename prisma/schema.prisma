@@ -32,6 +32,7 @@ enum PaymentGateway {
   MERCADO_PAGO
   STRIPE
   MANUAL
+  MOCK
 }
 
 enum CourseLevel {
