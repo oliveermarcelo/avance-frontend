@@ -128,7 +128,7 @@ export function LessonSidebar({
                       {module.title}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      {module.lessons.length} aulas � {formatDuration(moduleSeconds)}
+                      {module.lessons.length} aulas | {formatDuration(moduleSeconds)}
                     </p>
                   </div>
                 </div>

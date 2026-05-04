@@ -13,7 +13,6 @@ export async function enrollAction(formData: FormData) {
 
   const courseId = formData.get("courseId") as string;
   const slug = formData.get("slug") as string;
-
   if (!courseId) return;
 
   const course = await db.course.findUnique({
@@ -24,7 +23,7 @@ export async function enrollAction(formData: FormData) {
   if (!course || !course.isPublished) return;
 
   if (!course.isFree) {
-    redirect(`/checkout/${slug}`);
+    redirect(`/curso/${slug}`);
   }
 
   await db.enrollment.upsert({
@@ -53,6 +52,5 @@ export async function enrollAction(formData: FormData) {
   revalidatePath(`/aprender/${slug}`);
   revalidatePath("/inicio");
   revalidatePath("/meus-cursos");
-
   redirect(`/aprender/${slug}`);
 }

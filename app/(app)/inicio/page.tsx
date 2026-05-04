@@ -31,8 +31,8 @@ export default async function InicioPage() {
   return (
     <>
       <Header
-        subtitle={`Ol�, ${getFirstName(user.name)}`}
-        title={enrollments.length > 0 ? "Continue de onde parou" : "Bem-vindo � plataforma"}
+        subtitle={`Ola, ${getFirstName(user.name)}`}
+        title={enrollments.length > 0 ? "Continue de onde parou" : "Bem-vindo a plataforma"}
       />
 
       <div className="px-8 py-8 space-y-8">
@@ -139,10 +139,10 @@ export default async function InicioPage() {
         ) : (
           <section className="rounded-xl border border-border bg-card p-12 text-center space-y-4">
             <h3 className="text-xl font-bold text-primary">
-              Voc� ainda n�o est� matriculado em nenhum curso
+              Voce ainda Nao Esta matriculado em nenhum curso
             </h3>
             <p className="text-muted-foreground">
-              Explore nosso cat�logo e comece sua jornada de aprendizado.
+              Explore nosso Catalogo e comece sua jornada de aprendizado.
             </p>
             <Button asChild>
               <Link href="/cursos">Explorar cursos</Link>

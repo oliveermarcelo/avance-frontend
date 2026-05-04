@@ -4,21 +4,21 @@ import "./globals.css";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-open-sans",
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-montserrat",
   weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Avance MentorMed",
-  description: "Plataforma de cursos médicos premium",
+  description: "Plataforma de cursos medicos premium",
 };
 
 export default function RootLayout({

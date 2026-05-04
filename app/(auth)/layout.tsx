@@ -22,18 +22,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10 max-w-md space-y-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-accent">
-            Plataforma de cursos médicos
+            Plataforma de cursos Medicos
           </p>
           <h2 className="text-3xl font-bold leading-tight">
-            Conhecimento que transforma sua prática clínica.
+            Conhecimento que transforma sua Pratica Clinica.
           </h2>
           <p className="text-primary-foreground/70 leading-relaxed">
-            Cursos exclusivos com os melhores especialistas, mentorias e certificação reconhecida.
+            Cursos exclusivos com os melhores especialistas, mentorias e Certificacao reconhecida.
           </p>
         </div>
 
         <div className="relative z-10 text-xs text-primary-foreground/50">
-          © 2026 Avance MentorMed. Todos os direitos reservados.
+          (c) 2026 Avance MentorMed. Todos os direitos reservados.
         </div>
       </aside>
 
