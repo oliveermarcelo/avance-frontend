@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   PlayCircle,
@@ -320,6 +321,32 @@ export default async function CursoPublicoPage({
                 <ul className="border-t border-slate-100">
                   {module.lessons.map((lesson, lIdx) => {
                     const canPreview = lesson.isFree;
+                    if (canPreview) {
+                      return (
+                        <li key={lesson.id}>
+                          <Link
+                            href={`/curso/${course.slug}/preview/${lesson.id}`}
+                            className="group flex items-center gap-4 border-b border-slate-100 px-5 py-3 transition hover:bg-emerald-50/40 last:border-b-0"
+                          >
+                            <span className="text-[10px] font-bold text-slate-400 w-8">
+                              {String(lIdx + 1).padStart(2, "0")}
+                            </span>
+                            <PlayCircle className="h-4 w-4 shrink-0 text-emerald-500 group-hover:text-emerald-600" />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm text-slate-700 group-hover:text-emerald-700">
+                                {lesson.title}
+                              </p>
+                            </div>
+                            <span className="shrink-0 text-[10px] text-slate-400">
+                              {formatDuration(lesson.duration)}
+                            </span>
+                            <span className="shrink-0 inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700 group-hover:bg-emerald-100">
+                              Preview
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    }
                     return (
                       <li
                         key={lesson.id}
@@ -328,11 +355,7 @@ export default async function CursoPublicoPage({
                         <span className="text-[10px] font-bold text-slate-400 w-8">
                           {String(lIdx + 1).padStart(2, "0")}
                         </span>
-                        {canPreview ? (
-                          <PlayCircle className="h-4 w-4 shrink-0 text-emerald-500" />
-                        ) : (
-                          <Lock className="h-4 w-4 shrink-0 text-slate-300" />
-                        )}
+                        <Lock className="h-4 w-4 shrink-0 text-slate-300" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm text-slate-700">
                             {lesson.title}
@@ -341,11 +364,6 @@ export default async function CursoPublicoPage({
                         <span className="shrink-0 text-[10px] text-slate-400">
                           {formatDuration(lesson.duration)}
                         </span>
-                        {canPreview && (
-                          <span className="shrink-0 inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
-                            Preview
-                          </span>
-                        )}
                       </li>
                     );
                   })}
