@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getPaymentGateway } from "@/lib/payments/factory";
 import { getActiveGateway } from "@/lib/settings";
+import { notifyEnrollmentCreated, notifyPaymentConfirmed } from "@/lib/data/notifications";
 import type { PaymentMethod, CheckoutInput } from "@/lib/payments/types";
 
 const customerSchema = z.object({
@@ -202,6 +203,12 @@ export async function createCheckoutAction(
 
   if (result.status === "PAID") {
     await ensureEnrollment(session.user.id, course.id);
+    await notifyPaymentConfirmed(
+      session.user.id,
+      course.title,
+      course.slug,
+      Number(course.price)
+    );
     revalidatePath(`/curso/${course.slug}`);
     revalidatePath("/meus-cursos");
     return {
@@ -225,12 +232,20 @@ async function ensureEnrollment(userId: string, courseId: string) {
     where: { userId_courseId: { userId, courseId } },
   });
 
+  const course = await db.course.findUnique({
+    where: { id: courseId },
+    select: { title: true, slug: true },
+  });
+
   if (existing) {
     if (existing.status !== "ACTIVE" && existing.status !== "COMPLETED") {
       await db.enrollment.update({
         where: { id: existing.id },
         data: { status: "ACTIVE", expiresAt: null, enrolledAt: new Date() },
       });
+      if (course) {
+        await notifyEnrollmentCreated(userId, course.title, course.slug);
+      }
     }
     return;
   }
@@ -248,6 +263,10 @@ async function ensureEnrollment(userId: string, courseId: string) {
     where: { id: courseId },
     data: { enrollmentCount: { increment: 1 } },
   });
+
+  if (course) {
+    await notifyEnrollmentCreated(userId, course.title, course.slug);
+  }
 }
 
 export type CheckPaymentState = {

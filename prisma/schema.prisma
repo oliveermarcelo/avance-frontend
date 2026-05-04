@@ -63,6 +63,7 @@ model User {
   notes             LessonNote[]
   sessions          Session[]
   accounts          Account[]
+  notifications     Notification[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -353,4 +354,33 @@ model Settings {
   updatedAt DateTime @updatedAt
 
   @@index([key])
+}
+
+enum NotificationType {
+  WELCOME
+  ENROLLMENT_CREATED
+  PAYMENT_CONFIRMED
+  PAYMENT_FAILED
+  COURSE_COMPLETED
+  GENERIC
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      NotificationType @default(GENERIC)
+  title     String
+  message   String
+  link      String?
+  metadata  Json?
+
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getPaymentGateway } from "@/lib/payments/factory";
+import { notifyEnrollmentCreated, notifyPaymentConfirmed } from "@/lib/data/notifications";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
 
   const payment = await db.payment.findFirst({
     where: { transactionId: tx, userId: session.user.id },
-    include: { course: { select: { slug: true } } },
+    include: { course: { select: { slug: true, title: true } } },
   });
 
   if (!payment) {
@@ -69,12 +70,21 @@ export async function GET(request: Request) {
           where: { id: payment.courseId },
           data: { enrollmentCount: { increment: 1 } },
         });
+        await notifyEnrollmentCreated(payment.userId, payment.course.title, payment.course.slug);
       } else if (existing.status !== "ACTIVE" && existing.status !== "COMPLETED") {
         await db.enrollment.update({
           where: { id: existing.id },
           data: { status: "ACTIVE", expiresAt: null, enrolledAt: new Date() },
         });
+        await notifyEnrollmentCreated(payment.userId, payment.course.title, payment.course.slug);
       }
+
+      await notifyPaymentConfirmed(
+        payment.userId,
+        payment.course.title,
+        payment.course.slug,
+        Number(payment.amount)
+      );
 
       return NextResponse.json({
         status: "PAID",

@@ -5,6 +5,7 @@ import { AuthError } from "next-auth";
 import { signIn, signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
+import { notifyWelcome } from "@/lib/data/notifications";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail invalido"),
@@ -112,7 +113,7 @@ export async function signupAction(
 
   const hashedPassword = await hashPassword(data.password);
 
-  await db.user.create({
+  const newUser = await db.user.create({
     data: {
       name: data.name,
       email: data.email,
@@ -124,6 +125,8 @@ export async function signupAction(
       emailVerified: new Date(),
     },
   });
+
+  await notifyWelcome(newUser.id, newUser.name);
 
   const redirectTo = (formData.get("redirect") as string) || "/inicio";
 
