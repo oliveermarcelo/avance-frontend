@@ -24,7 +24,7 @@ export default async function MeusCursosPage() {
             {enrollments.map((enrollment) => (
               <Link
                 key={enrollment.id}
-                href={`/curso/${enrollment.course.slug}`}
+                href={`/aprender/${enrollment.course.slug}`}
                 className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-accent hover:shadow-lg hover:shadow-accent/10"
               >
                 <div className="relative aspect-video bg-gradient-to-br from-primary to-primary/70">

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   saveLessonNoteAction,
   deleteLessonNoteAction,
-} from "@/app/(app)/curso/[slug]/aula/[lessonId]/actions";
+} from "@/app/(app)/aprender/[slug]/aula/[lessonId]/actions";
 
 interface Note {
   id: string;

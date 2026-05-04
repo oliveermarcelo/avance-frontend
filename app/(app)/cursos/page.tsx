@@ -24,7 +24,7 @@ export default async function CursosPage() {
 
   return (
     <>
-      <Header subtitle="Catálogo" title="Todos os cursos" />
+      <Header subtitle="Cat�logo" title="Todos os cursos" />
 
       <div className="px-8 py-8">
         {courses.length > 0 ? (
@@ -32,7 +32,7 @@ export default async function CursosPage() {
             {courses.map((course) => (
               <Link
                 key={course.id}
-                href={`/curso/${course.slug}`}
+                href={`/aprender/${course.slug}`}
                 className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-accent hover:shadow-lg hover:shadow-accent/10"
               >
                 <div className="relative aspect-video bg-gradient-to-br from-primary to-primary/70">
@@ -76,12 +76,12 @@ export default async function CursosPage() {
                         </>
                       ) : (
                         <span className="text-[10px] text-muted-foreground">
-                          Sem avaliações
+                          Sem avalia��es
                         </span>
                       )}
                     </div>
                     <span className="text-sm font-bold text-primary">
-                      {course.isFree ? "Grátis" : formatPrice(course.price)}
+                      {course.isFree ? "Gr�tis" : formatPrice(course.price)}
                     </span>
                   </div>
                 </div>
@@ -91,7 +91,7 @@ export default async function CursosPage() {
         ) : (
           <div className="rounded-xl border border-border bg-card p-12 text-center">
             <h3 className="text-xl font-bold text-primary mb-2">
-              Nenhum curso disponível
+              Nenhum curso dispon�vel
             </h3>
             <p className="text-muted-foreground">
               Em breve teremos novos cursos. Volte mais tarde.

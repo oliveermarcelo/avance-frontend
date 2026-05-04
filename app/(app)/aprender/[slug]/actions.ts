@@ -50,9 +50,9 @@ export async function enrollAction(formData: FormData) {
     data: { enrollmentCount: { increment: 1 } },
   });
 
-  revalidatePath(`/curso/${slug}`);
+  revalidatePath(`/aprender/${slug}`);
   revalidatePath("/inicio");
   revalidatePath("/meus-cursos");
 
-  redirect(`/curso/${slug}`);
+  redirect(`/aprender/${slug}`);
 }

@@ -34,8 +34,8 @@ function formatDuration(seconds: number): string {
 
 const levelLabels = {
   BEGINNER: "Iniciante",
-  INTERMEDIATE: "Intermediário",
-  ADVANCED: "Avançado",
+  INTERMEDIATE: "Intermedi�rio",
+  ADVANCED: "Avan�ado",
 };
 
 export default async function CursoPage({
@@ -120,9 +120,9 @@ export default async function CursoPage({
 
           <section className="space-y-4">
             <div>
-              <h3 className="text-base font-bold text-primary">Conteúdo do curso</h3>
+              <h3 className="text-base font-bold text-primary">Conte�do do curso</h3>
               <p className="text-sm text-muted-foreground">
-                Veja o que você vai aprender
+                Veja o que voc� vai aprender
               </p>
             </div>
             <CourseOutline
@@ -168,7 +168,7 @@ export default async function CursoPage({
           {course.reviews.length > 0 && (
             <section className="space-y-4">
               <h3 className="text-base font-bold text-primary">
-                Avaliações ({course._count.reviews})
+                Avalia��es ({course._count.reviews})
               </h3>
               <div className="space-y-3">
                 {course.reviews.map((review) => (
@@ -226,7 +226,7 @@ export default async function CursoPage({
                 {course.isFree ? "Curso gratuito" : "Investimento"}
               </p>
               <p className="text-3xl font-bold text-primary">
-                {course.isFree ? "Grátis" : formatPrice(course.price)}
+                {course.isFree ? "Gr�tis" : formatPrice(course.price)}
               </p>
             </div>
 
@@ -247,9 +247,9 @@ export default async function CursoPage({
                   </div>
                 </div>
                 <Button asChild className="w-full" size="lg">
-                  <Link href={`/curso/${course.slug}/aula/${course.modules[0]?.lessons[0]?.id ?? ""}`}>
+                  <Link href={`/aprender/${course.slug}/aula/${course.modules[0]?.lessons[0]?.id ?? ""}`}>
                     <PlayCircle className="mr-2 h-4 w-4" />
-                    {enrollment.progress > 0 ? "Continuar curso" : "Começar curso"}
+                    {enrollment.progress > 0 ? "Continuar curso" : "Come�ar curso"}
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>
@@ -259,7 +259,7 @@ export default async function CursoPage({
                 <input type="hidden" name="courseId" value={course.id} />
                 <input type="hidden" name="slug" value={course.slug} />
                 <Button type="submit" className="w-full" size="lg">
-                  {course.isFree ? "Matricular-se grátis" : "Matricular-se agora"}
+                  {course.isFree ? "Matricular-se gr�tis" : "Matricular-se agora"}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </form>
@@ -268,15 +268,15 @@ export default async function CursoPage({
             <ul className="space-y-2 pt-4 border-t border-border text-xs text-muted-foreground">
               <li className="flex items-center gap-2">
                 <Stethoscope className="h-3.5 w-3.5 text-accent" />
-                Conteúdo focado em medicina
+                Conte�do focado em medicina
               </li>
               <li className="flex items-center gap-2">
                 <Clock className="h-3.5 w-3.5 text-accent" />
-                Acesso vitalício
+                Acesso vital�cio
               </li>
               <li className="flex items-center gap-2">
                 <Award className="h-3.5 w-3.5 text-accent" />
-                Certificado de conclusão
+                Certificado de conclus�o
               </li>
             </ul>
           </div>

@@ -56,7 +56,7 @@ export async function updateProgressAction(input: {
     data: { lastAccessAt: new Date() },
   });
 
-  revalidatePath(`/curso/${slug}`);
+  revalidatePath(`/aprender/${slug}`);
   return { ok: true, completed: shouldComplete };
 }
 
@@ -97,7 +97,7 @@ export async function markLessonCompleteAction(input: {
   });
 
   await recalcCourseProgress(enrollmentId, lesson.module.courseId, userId);
-  revalidatePath(`/curso/${slug}`);
+  revalidatePath(`/aprender/${slug}`);
   return { ok: true };
 }
 
@@ -171,7 +171,7 @@ export async function saveLessonNoteAction(input: {
     },
   });
 
-  revalidatePath(`/curso/${input.slug}/aula/${input.lessonId}`);
+  revalidatePath(`/aprender/${input.slug}/aula/${input.lessonId}`);
   return { ok: true };
 }
 
@@ -183,6 +183,6 @@ export async function deleteLessonNoteAction(input: { noteId: string; slug: stri
     where: { id: input.noteId, userId: session.user.id },
   });
 
-  revalidatePath(`/curso/${input.slug}/aula/${input.lessonId}`);
+  revalidatePath(`/aprender/${input.slug}/aula/${input.lessonId}`);
   return { ok: true };
 }

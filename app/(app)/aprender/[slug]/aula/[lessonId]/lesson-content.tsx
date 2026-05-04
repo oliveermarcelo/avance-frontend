@@ -79,8 +79,8 @@ export function LessonContent({ ctx, slug }: LessonContentProps) {
   };
 
   const goToNext = () => {
-    if (nextLesson) router.push(`/curso/${slug}/aula/${nextLesson.id}`);
-    else router.push(`/curso/${slug}`);
+    if (nextLesson) router.push(`/aprender/${slug}/aula/${nextLesson.id}`);
+    else router.push(`/aprender/${slug}`);
   };
 
   const showSidebar = sidebarOpen && !cinemaMode;
@@ -133,7 +133,7 @@ export function LessonContent({ ctx, slug }: LessonContentProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => previousLesson && router.push(`/curso/${slug}/aula/${previousLesson.id}`)}
+              onClick={() => previousLesson && router.push(`/aprender/${slug}/aula/${previousLesson.id}`)}
               disabled={!previousLesson}
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
@@ -176,7 +176,7 @@ export function LessonContent({ ctx, slug }: LessonContentProps) {
                       target="_blank"
                       className="flex items-center gap-2 rounded-lg border border-border bg-card p-3 text-sm transition hover:border-accent"
                     >
-                      <span className="text-accent">↓</span>
+                      <span className="text-accent">?</span>
                       {r.title ?? r.url}
                     </Link>
                   </li>

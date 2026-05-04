@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 
-const PUBLIC_ROUTES = ["/login", "/cadastro", "/recuperar-senha"];
+const AUTH_ROUTES = ["/login", "/cadastro", "/recuperar-senha"];
 const PUBLIC_PREFIXES = ["/api/auth", "/_next", "/favicon", "/assets"];
+const PUBLIC_ROUTES = ["/", "/cursos-publicos", "/privacidade", "/termos", "/reembolsos"];
+const PUBLIC_DYNAMIC_PREFIXES = ["/curso/"];
 const ADMIN_PREFIX = "/admin";
 
 export async function proxy(request: NextRequest) {
@@ -13,15 +15,23 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const isAuthRoute = AUTH_ROUTES.includes(pathname);
+  const isPublicStatic = PUBLIC_ROUTES.includes(pathname);
+  const isPublicDynamic = PUBLIC_DYNAMIC_PREFIXES.some((p) => pathname.startsWith(p));
+  const isPublicRoute = isPublicStatic || isPublicDynamic;
+
   const session = await auth();
   const isLoggedIn = !!session?.user;
-  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
-  if (isPublicRoute && isLoggedIn) {
+  if (isAuthRoute && isLoggedIn) {
     return NextResponse.redirect(new URL("/inicio", request.url));
   }
 
-  if (!isPublicRoute && !isLoggedIn) {
+  if (isAuthRoute || isPublicRoute) {
+    return NextResponse.next();
+  }
+
+  if (!isLoggedIn) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);

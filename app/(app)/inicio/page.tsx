@@ -31,8 +31,8 @@ export default async function InicioPage() {
   return (
     <>
       <Header
-        subtitle={`Olá, ${getFirstName(user.name)}`}
-        title={enrollments.length > 0 ? "Continue de onde parou" : "Bem-vindo à plataforma"}
+        subtitle={`Ol�, ${getFirstName(user.name)}`}
+        title={enrollments.length > 0 ? "Continue de onde parou" : "Bem-vindo � plataforma"}
       />
 
       <div className="px-8 py-8 space-y-8">
@@ -68,7 +68,7 @@ export default async function InicioPage() {
               </div>
 
               <Button size="lg" className="shrink-0" asChild>
-                <Link href={`/curso/${continueWatching.course.slug}`}>
+                <Link href={`/aprender/${continueWatching.course.slug}`}>
                   <PlayCircle className="mr-2 h-4 w-4" />
                   Continuar curso
                   <ChevronRight className="ml-1 h-4 w-4" />
@@ -96,7 +96,7 @@ export default async function InicioPage() {
               {enrollments.slice(0, 6).map((enrollment) => (
                 <Link
                   key={enrollment.id}
-                  href={`/curso/${enrollment.course.slug}`}
+                  href={`/aprender/${enrollment.course.slug}`}
                   className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-accent hover:shadow-lg hover:shadow-accent/10"
                 >
                   <div className="relative aspect-video bg-gradient-to-br from-primary to-primary/70">
@@ -139,10 +139,10 @@ export default async function InicioPage() {
         ) : (
           <section className="rounded-xl border border-border bg-card p-12 text-center space-y-4">
             <h3 className="text-xl font-bold text-primary">
-              Você ainda não está matriculado em nenhum curso
+              Voc� ainda n�o est� matriculado em nenhum curso
             </h3>
             <p className="text-muted-foreground">
-              Explore nosso catálogo e comece sua jornada de aprendizado.
+              Explore nosso cat�logo e comece sua jornada de aprendizado.
             </p>
             <Button asChild>
               <Link href="/cursos">Explorar cursos</Link>

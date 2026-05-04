@@ -76,7 +76,7 @@ export function LessonSidebar({
       <header className="flex items-start justify-between gap-3 border-b border-border p-5">
         <div className="min-w-0 space-y-2">
           <Link
-            href={`/curso/${courseSlug}`}
+            href={`/aprender/${courseSlug}`}
             className="text-[10px] font-semibold uppercase tracking-widest text-accent hover:underline"
           >
             Voltar ao curso
@@ -128,7 +128,7 @@ export function LessonSidebar({
                       {module.title}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      {module.lessons.length} aulas · {formatDuration(moduleSeconds)}
+                      {module.lessons.length} aulas � {formatDuration(moduleSeconds)}
                     </p>
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export function LessonSidebar({
                     return (
                       <li key={lesson.id}>
                         <Link
-                          href={`/curso/${courseSlug}/aula/${lesson.id}`}
+                          href={`/aprender/${courseSlug}/aula/${lesson.id}`}
                           className={cn(
                             "flex items-center gap-3 px-5 py-2.5 text-xs transition",
                             isCurrent

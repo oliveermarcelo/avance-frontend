@@ -17,7 +17,7 @@ export default async function AulaPage({
   if (!ctx) notFound();
 
   if (!ctx.enrollment && !ctx.lesson.isFree) {
-    redirect(`/curso/${slug}`);
+    redirect(`/aprender/${slug}`);
   }
 
   return <LessonContent ctx={ctx} slug={slug} />;
