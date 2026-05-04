@@ -276,6 +276,12 @@ model Certificate {
   @@index([validationCode])
 }
 
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  BOLETO
+}
+
 model Payment {
   id        String         @id @default(cuid())
   userId    String
@@ -286,6 +292,7 @@ model Payment {
   amount        Decimal       @db.Decimal(10, 2)
   status        PaymentStatus @default(PENDING)
   gateway       PaymentGateway
+  method        PaymentMethod  @default(PIX)
   transactionId String?       @unique
   externalRef   String?
   metadata      Json?
