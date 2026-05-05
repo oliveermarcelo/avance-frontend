@@ -6,6 +6,7 @@ import { signIn, signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
 import { notifyWelcome } from "@/lib/data/notifications";
+import { getDefaultRouteForRole } from "@/lib/auth/role-routes";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail invalido"),
@@ -36,7 +37,17 @@ export async function loginAction(
   }
 
   const { email, password } = validatedFields.data;
-  const redirectTo = (formData.get("redirect") as string) || "/inicio";
+
+  // Se redirect explicito vier do form (ex: deep link), respeita.
+  // Senao, busca a role do user e manda pro dashboard certo.
+  let redirectTo = (formData.get("redirect") as string) || "";
+  if (!redirectTo) {
+    const dbUser = await db.user.findUnique({
+      where: { email },
+      select: { role: true },
+    });
+    redirectTo = getDefaultRouteForRole(dbUser?.role);
+  }
 
   try {
     await signIn("credentials", {

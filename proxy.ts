@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import {
+  getDefaultRouteForRole,
+  canAccessRoute,
+  ADMIN_PREFIX,
+  INSTRUCTOR_PREFIX,
+} from "@/lib/auth/role-routes";
 
 const AUTH_ROUTES = ["/login", "/cadastro", "/recuperar-senha"];
 const PUBLIC_PREFIXES = ["/api/auth", "/_next", "/favicon", "/assets"];
 const PUBLIC_ROUTES = ["/", "/cursos-publicos", "/privacidade", "/termos", "/reembolsos"];
 const PUBLIC_DYNAMIC_PREFIXES = ["/curso/"];
-const ADMIN_PREFIX = "/admin";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,23 +27,28 @@ export async function proxy(request: NextRequest) {
 
   const session = await auth();
   const isLoggedIn = !!session?.user;
+  const role = session?.user?.role;
 
+  // Se usuario logado tenta acessar /login, /cadastro, /recuperar-senha,
+  // manda pro dashboard certo da role dele
   if (isAuthRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL("/inicio", request.url));
+    return NextResponse.redirect(new URL(getDefaultRouteForRole(role), request.url));
   }
 
   if (isAuthRoute || isPublicRoute) {
     return NextResponse.next();
   }
 
+  // Nao logado tentando acessar rota privada -> manda pro login
   if (!isLoggedIn) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (pathname.startsWith(ADMIN_PREFIX) && session?.user?.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/inicio", request.url));
+  // Logado mas sem permissao para a rota -> manda pro dashboard da role
+  if (!canAccessRoute(role, pathname)) {
+    return NextResponse.redirect(new URL(getDefaultRouteForRole(role), request.url));
   }
 
   return NextResponse.next();
