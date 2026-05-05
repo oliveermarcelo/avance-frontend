@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { notifyCourseCompleted } from "@/lib/data/notifications";
 
 const COMPLETION_THRESHOLD = 0.9;
 
@@ -106,6 +107,14 @@ async function recalcCourseProgress(
   courseId: string,
   userId: string
 ) {
+  const enrollmentBefore = await db.enrollment.findUnique({
+    where: { id: enrollmentId },
+    select: {
+      status: true,
+      course: { select: { title: true, slug: true } },
+    },
+  });
+
   const totalLessons = await db.lesson.count({
     where: { module: { courseId } },
   });
@@ -128,6 +137,15 @@ async function recalcCourseProgress(
 
   if (isCompleted) {
     await ensureCertificate(enrollmentId, userId);
+
+    // Notifica apenas na transicao (nao em recompletada)
+    if (enrollmentBefore?.status !== "COMPLETED" && enrollmentBefore?.course) {
+      await notifyCourseCompleted(
+        userId,
+        enrollmentBefore.course.title,
+        enrollmentBefore.course.slug
+      );
+    }
   }
 }
 
