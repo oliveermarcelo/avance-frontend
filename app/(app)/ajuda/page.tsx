@@ -29,7 +29,7 @@ export default function AjudaPage() {
     <>
       <Header subtitle="Estamos aqui pra ajudar" title="Central de ajuda" />
 
-      <div className="px-8 py-8 space-y-8">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 space-y-6 sm:space-y-8">
         <div className="grid gap-5 sm:grid-cols-3">
           <a
             href="mailto:suporte@avance.com.br"

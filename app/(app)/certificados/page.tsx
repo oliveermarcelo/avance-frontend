@@ -23,7 +23,7 @@ export default async function CertificadosPage() {
     <>
       <Header subtitle="Suas conquistas" title="Certificados" />
 
-      <div className="px-8 py-8">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {certificates.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {certificates.map((cert) => (
@@ -81,7 +81,7 @@ export default async function CertificadosPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card p-12 text-center space-y-4">
+          <div className="rounded-xl border border-border bg-card p-8 sm:p-12 text-center space-y-4">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/10">
               <Award className="h-8 w-8 text-accent" strokeWidth={1.5} />
             </div>

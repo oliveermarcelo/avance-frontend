@@ -6,8 +6,8 @@ export default function MentoriasPage() {
     <>
       <Header subtitle="Aprenda direto com especialistas" title="Mentorias" />
 
-      <div className="px-8 py-8">
-        <div className="rounded-2xl bg-primary p-8 md:p-12 relative overflow-hidden">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="rounded-2xl bg-primary p-6 sm:p-8 md:p-12 relative overflow-hidden">
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/10" />
           <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-accent/5" />
 
@@ -15,7 +15,7 @@ export default function MentoriasPage() {
             <p className="text-[10px] font-semibold uppercase tracking-widest text-accent">
               Em breve
             </p>
-            <h2 className="text-3xl font-bold text-primary-foreground md:text-4xl">
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary-foreground md:text-4xl">
               Mentorias 1-a-1 com especialistas
             </h2>
             <p className="text-primary-foreground/70 leading-relaxed">

@@ -35,9 +35,9 @@ export default async function InicioPage() {
         title={enrollments.length > 0 ? "Continue de onde parou" : "Bem-vindo a plataforma"}
       />
 
-      <div className="px-8 py-8 space-y-8">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 space-y-6 sm:space-y-8">
         {continueWatching && (
-          <section className="relative overflow-hidden rounded-2xl bg-primary p-6 md:p-8">
+          <section className="relative overflow-hidden rounded-2xl bg-primary p-5 sm:p-6 md:p-8">
             <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-accent/10" />
             <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-accent/5" />
 
@@ -46,7 +46,7 @@ export default async function InicioPage() {
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-accent">
                   Em andamento
                 </p>
-                <h2 className="text-2xl font-bold text-primary-foreground md:text-3xl">
+                <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground md:text-3xl">
                   {continueWatching.course.title}
                 </h2>
                 {continueWatching.currentModule && (
@@ -67,7 +67,7 @@ export default async function InicioPage() {
                 </div>
               </div>
 
-              <Button size="lg" className="shrink-0" asChild>
+              <Button size="lg" className="shrink-0 w-full md:w-auto" asChild>
                 <Link href={`/aprender/${continueWatching.course.slug}`}>
                   <PlayCircle className="mr-2 h-4 w-4" />
                   Continuar curso
@@ -137,7 +137,7 @@ export default async function InicioPage() {
             </div>
           </section>
         ) : (
-          <section className="rounded-xl border border-border bg-card p-12 text-center space-y-4">
+          <section className="rounded-xl border border-border bg-card p-8 sm:p-12 text-center space-y-4">
             <h3 className="text-xl font-bold text-primary">
               Voce ainda Nao Esta matriculado em nenhum curso
             </h3>

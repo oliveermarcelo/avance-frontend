@@ -10,13 +10,13 @@ export default async function PerfilPage() {
     <>
       <Header subtitle="Seus dados" title="Meu perfil" />
 
-      <div className="px-8 py-8 max-w-4xl space-y-6">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 max-w-4xl space-y-6">
         <section className="rounded-2xl border border-border bg-card overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/70 h-32 relative">
             <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-accent/10" />
           </div>
 
-          <div className="px-8 pb-8 -mt-12 relative">
+          <div className="px-4 pb-6 sm:px-6 sm:pb-8 lg:px-8 -mt-12 relative">
             {user.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -44,7 +44,7 @@ export default async function PerfilPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-8 space-y-5">
+        <section className="rounded-2xl border border-border bg-card p-5 sm:p-8 space-y-5">
           <h3 className="text-base font-bold text-primary">Informações de contato</h3>
 
           <div className="grid gap-4 sm:grid-cols-2">

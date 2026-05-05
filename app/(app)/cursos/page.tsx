@@ -26,7 +26,7 @@ export default async function CursosPage() {
     <>
       <Header subtitle="Catalogo" title="Todos os cursos" />
 
-      <div className="px-8 py-8">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {courses.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {courses.map((course) => (
@@ -89,7 +89,7 @@ export default async function CursosPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card p-12 text-center">
+          <div className="rounded-xl border border-border bg-card p-8 sm:p-12 text-center">
             <h3 className="text-xl font-bold text-primary mb-2">
               Nenhum curso dispoNivel
             </h3>
