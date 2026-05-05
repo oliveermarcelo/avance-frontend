@@ -186,3 +186,82 @@ export async function deleteLessonNoteAction(input: { noteId: string; slug: stri
   revalidatePath(`/aprender/${input.slug}/aula/${input.lessonId}`);
   return { ok: true };
 }
+
+export async function askLessonQuestionAction(input: {
+  lessonId: string;
+  courseId: string;
+  slug: string;
+  title: string;
+  body: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, error: "Nao autenticado." };
+
+  const title = input.title.trim();
+  const body = input.body.trim();
+  if (!title || !body) return { ok: false, error: "Preencha titulo e descricao." };
+  if (title.length > 200) return { ok: false, error: "Titulo muito longo (max 200)." };
+  if (body.length > 5000) return { ok: false, error: "Descricao muito longa." };
+
+  await db.question.create({
+    data: {
+      userId: session.user.id,
+      lessonId: input.lessonId,
+      courseId: input.courseId,
+      title,
+      body,
+    },
+  });
+
+  const course = await db.course.findUnique({
+    where: { id: input.courseId },
+    select: { instructorId: true, title: true },
+  });
+  if (course) {
+    await db.notification.create({
+      data: {
+        userId: course.instructorId,
+        type: "GENERIC",
+        title: "Nova pergunta",
+        message: `Voce recebeu uma nova pergunta em ${course.title}.`,
+        link: "/instrutor/perguntas",
+      },
+    });
+  }
+
+  revalidatePath(`/aprender/${input.slug}/aula/${input.lessonId}`);
+  return { ok: true };
+}
+
+export async function replyToLessonQuestionAction(input: {
+  questionId: string;
+  slug: string;
+  lessonId: string;
+  body: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, error: "Nao autenticado." };
+
+  const body = input.body.trim();
+  if (!body) return { ok: false, error: "Resposta vazia." };
+
+  const question = await db.question.findUnique({
+    where: { id: input.questionId },
+    select: { userId: true },
+  });
+  if (!question || question.userId !== session.user.id) {
+    return { ok: false, error: "Sem permissao." };
+  }
+
+  await db.answer.create({
+    data: {
+      questionId: input.questionId,
+      userId: session.user.id,
+      body,
+      isInstructor: false,
+    },
+  });
+
+  revalidatePath(`/aprender/${input.slug}/aula/${input.lessonId}`);
+  return { ok: true };
+}

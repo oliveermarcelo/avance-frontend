@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { LessonContent } from "./lesson-content";
 import { getCurrentUser } from "@/lib/data/user";
 import { getLessonContext } from "@/lib/data/lesson";
+import { db } from "@/lib/db";
 
 export default async function AulaPage({
   params,
@@ -20,7 +21,35 @@ export default async function AulaPage({
     redirect(`/aprender/${slug}`);
   }
 
-  return <LessonContent ctx={ctx} slug={slug} />;
+  const questions = await db.question.findMany({
+    where: { lessonId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { select: { id: true, name: true } },
+      answers: {
+        orderBy: { createdAt: "asc" },
+        include: { user: { select: { id: true, name: true } } },
+      },
+    },
+  });
+
+  const serializedQuestions = questions.map((q) => ({
+    ...q,
+    createdAt: q.createdAt.toISOString(),
+    updatedAt: q.updatedAt.toISOString(),
+    answers: q.answers.map((a) => ({
+      ...a,
+      createdAt: a.createdAt.toISOString(),
+      updatedAt: a.updatedAt.toISOString(),
+    })),
+  }));
+
+  return (
+    <LessonContent
+      ctx={{ ...ctx, questions: serializedQuestions }}
+      slug={slug}
+    />
+  );
 }
 
 export const dynamic = "force-dynamic";

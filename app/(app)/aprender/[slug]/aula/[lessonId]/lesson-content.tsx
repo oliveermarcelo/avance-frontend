@@ -25,7 +25,7 @@ const VideoPlayer = dynamic(
   }
 );
 import { LessonSidebar } from "@/components/avance/lesson-sidebar";
-import { LessonNotes } from "@/components/avance/lesson-notes";
+import { LessonTabs } from "./lesson-tabs";
 import {
   updateProgressAction,
   markLessonCompleteAction,
@@ -56,6 +56,7 @@ export function LessonContent({ ctx, slug }: LessonContentProps) {
     notes,
     watchedLessonIds,
     initialSeconds,
+    questions,
   } = ctx;
 
   useEffect(() => {
@@ -253,10 +254,12 @@ export function LessonContent({ ctx, slug }: LessonContentProps) {
           )}
 
           <div className="mt-6 sm:mt-8">
-            <LessonNotes
+            <LessonTabs
               notes={notes}
               lessonId={lesson.id}
               slug={slug}
+              courseId={course.id}
+              questions={questions ?? []}
               getCurrentTimestamp={() =>
                 playerSecondsRef.current > 0
                   ? Math.round(playerSecondsRef.current)
