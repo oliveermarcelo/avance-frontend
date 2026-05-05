@@ -1,17 +1,23 @@
 import Link from "next/link";
-import { Stethoscope, Bell } from "lucide-react";
+import { Stethoscope } from "lucide-react";
 import { InstructorSidebarNav } from "./instructor-sidebar-nav";
 import { InstructorUserMenu } from "./instructor-user-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationBell } from "@/components/avance/notification-bell";
-import { getCurrentUser, getUserInitials } from "@/lib/data/user";
 
-export async function InstructorSidebar() {
-  const user = await getCurrentUser();
-  if (!user) return null;
+interface Props {
+  user: {
+    name: string;
+    email: string;
+    crm: string | null;
+    avatar: string | null;
+    initials: string;
+  };
+}
 
+export function InstructorSidebar({ user }: Props) {
   return (
-    <aside className="flex h-screen w-64 flex-col bg-[#1F3A2D] text-white">
+    <aside className="hidden lg:flex h-screen w-64 flex-col bg-[#1F3A2D] text-white shrink-0">
       <div className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-4">
         <Link
           href="/instrutor"
@@ -29,17 +35,15 @@ export async function InstructorSidebar() {
         </Link>
         <NotificationBell variant="dark" />
       </div>
-
       <ScrollArea className="flex-1">
         <InstructorSidebarNav />
       </ScrollArea>
-
       <InstructorUserMenu
         name={user.name}
         email={user.email}
         crm={user.crm}
         avatar={user.avatar}
-        initials={getUserInitials(user.name)}
+        initials={user.initials}
       />
     </aside>
   );
