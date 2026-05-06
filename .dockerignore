@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+.env*
+!.env.example
+*.md
+README.md
+.DS_Store
+.idea
+.vscode
+.eslintcache
+prisma/dev.db*
+docker-compose.yml
+Dockerfile
+.dockerignore
