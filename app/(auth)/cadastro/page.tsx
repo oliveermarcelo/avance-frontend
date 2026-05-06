@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { SignupForm } from "./signup-form";
 
 export default function CadastroPage() {
@@ -15,7 +16,9 @@ export default function CadastroPage() {
         </p>
       </header>
 
-      <SignupForm />
+      <Suspense fallback={null}>
+        <SignupForm />
+      </Suspense>
     </div>
   );
 }
