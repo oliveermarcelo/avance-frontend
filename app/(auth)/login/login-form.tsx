@@ -88,16 +88,6 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         </Link>
       </div>
 
-      <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-accent">
-          Credenciais de teste
-        </p>
-        <div className="space-y-1 text-xs text-muted-foreground font-mono">
-          <p><strong className="text-foreground">aluno@avance.com.br</strong> / aluno123</p>
-          <p><strong className="text-foreground">dr.silva@avance.com.br</strong> / instrutor123</p>
-          <p><strong className="text-foreground">admin@avance.com.br</strong> / admin123</p>
-        </div>
-      </div>
     </div>
   );
 }
