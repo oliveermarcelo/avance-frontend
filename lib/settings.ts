@@ -7,6 +7,7 @@ export interface PaymentSettings {
   gateway: PaymentGatewayType;
   asaasApiKey?: string;
   asaasSandbox?: boolean;
+  asaasWebhookToken?: string;
   mercadoPagoAccessToken?: string;
   mercadoPagoPublicKey?: string;
   mercadoPagoSandbox?: boolean;

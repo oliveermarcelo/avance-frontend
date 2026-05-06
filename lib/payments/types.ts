@@ -17,12 +17,12 @@ export interface CustomerInput {
   phone?: string;
   address?: {
     zipcode: string;
-    street: string;
     number: string;
+    street?: string;
     complement?: string;
-    district: string;
-    city: string;
-    state: string;
+    district?: string;
+    city?: string;
+    state?: string;
   };
 }
 
@@ -43,6 +43,7 @@ export interface CheckoutInput {
   customer: CustomerInput;
   method: PaymentMethod;
   card?: CardInput;
+  remoteIp?: string;
 }
 
 export interface CheckoutResult {

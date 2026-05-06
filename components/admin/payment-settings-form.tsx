@@ -71,11 +71,13 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
   const [gateway, setGateway] = useState<PaymentGatewayType>(initialSettings.gateway);
   const [asaasApiKey, setAsaasApiKey] = useState(initialSettings.asaasApiKey ?? "");
   const [asaasSandbox, setAsaasSandbox] = useState(initialSettings.asaasSandbox ?? true);
+  const [asaasWebhookToken, setAsaasWebhookToken] = useState(initialSettings.asaasWebhookToken ?? "");
   const [mpAccessToken, setMpAccessToken] = useState(initialSettings.mercadoPagoAccessToken ?? "");
   const [mpPublicKey, setMpPublicKey] = useState(initialSettings.mercadoPagoPublicKey ?? "");
   const [mpSandbox, setMpSandbox] = useState(initialSettings.mercadoPagoSandbox ?? true);
 
   const [showAsaasKey, setShowAsaasKey] = useState(false);
+  const [showAsaasWebhook, setShowAsaasWebhook] = useState(false);
   const [showMpToken, setShowMpToken] = useState(false);
 
   const handleSubmit = (formData: FormData) => {
@@ -209,6 +211,33 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
                 {showAsaasKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="asaasWebhookToken">Webhook Token (opcional)</Label>
+            <div className="relative">
+              <Input
+                id="asaasWebhookToken"
+                name="asaasWebhookToken"
+                type={showAsaasWebhook ? "text" : "password"}
+                value={asaasWebhookToken}
+                onChange={(e) => setAsaasWebhookToken(e.target.value)}
+                placeholder="Token configurado em Integracoes > Webhooks no Asaas"
+                disabled={isPending}
+                className="pr-10 font-mono text-xs bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowAsaasWebhook(!showAsaasWebhook)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                tabIndex={-1}
+              >
+                {showAsaasWebhook ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500">
+              URL do webhook: /api/webhooks/asaas. Cole esse token no campo "Token de autenticacao" ao criar o webhook no painel do Asaas.
+            </p>
           </div>
 
           <label className="flex items-center gap-2 cursor-pointer">

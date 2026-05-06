@@ -1,6 +1,7 @@
 import "server-only";
-import { getActiveGateway } from "@/lib/settings";
+import { getPaymentSettings } from "@/lib/settings";
 import { mockAdapter } from "./mock-adapter";
+import { createAsaasAdapter } from "./asaas-adapter";
 import type { PaymentGateway } from "./types";
 
 const notImplementedAdapter = (name: string): PaymentGateway => ({
@@ -9,7 +10,7 @@ const notImplementedAdapter = (name: string): PaymentGateway => ({
     return {
       ok: false,
       status: "FAILED",
-      errorMessage: `Gateway ${name} ainda nao implementado. Use MOCK por enquanto.`,
+      errorMessage: `Gateway ${name} ainda nao implementado.`,
     };
   },
   async getPaymentStatus() {
@@ -18,19 +19,23 @@ const notImplementedAdapter = (name: string): PaymentGateway => ({
 });
 
 export async function getPaymentGateway(): Promise<PaymentGateway | null> {
-  const active = await getActiveGateway();
+  const settings = await getPaymentSettings();
 
-  if (active === "NONE") return null;
-  if (active === "MOCK") return mockAdapter;
-  if (active === "ASAAS") return notImplementedAdapter("ASAAS");
-  if (active === "MERCADO_PAGO") return notImplementedAdapter("MERCADO_PAGO");
+  if (settings.gateway === "NONE") return null;
+  if (settings.gateway === "MOCK") return mockAdapter;
+
+  if (settings.gateway === "ASAAS") {
+    if (!settings.asaasApiKey) return null;
+    return createAsaasAdapter({
+      apiKey: settings.asaasApiKey,
+      sandbox: settings.asaasSandbox ?? true,
+      webhookToken: settings.asaasWebhookToken,
+    });
+  }
+
+  if (settings.gateway === "MERCADO_PAGO") {
+    return notImplementedAdapter("MERCADO_PAGO");
+  }
 
   return null;
-}
-
-export function getGatewayByType(
-  type: "MOCK" | "ASAAS" | "MERCADO_PAGO"
-): PaymentGateway {
-  if (type === "MOCK") return mockAdapter;
-  return notImplementedAdapter(type);
 }

@@ -9,12 +9,13 @@ import {
   type PaymentGatewayType,
   type PaymentSettings,
 } from "@/lib/settings";
-import { getGatewayByType } from "@/lib/payments/factory";
+import { getPaymentGateway } from "@/lib/payments/factory";
 
 const settingsSchema = z.object({
   gateway: z.enum(["NONE", "MOCK", "ASAAS", "MERCADO_PAGO"]),
   asaasApiKey: z.string().max(500).optional().nullable(),
   asaasSandbox: z.boolean(),
+  asaasWebhookToken: z.string().max(200).optional().nullable(),
   mercadoPagoAccessToken: z.string().max(500).optional().nullable(),
   mercadoPagoPublicKey: z.string().max(500).optional().nullable(),
   mercadoPagoSandbox: z.boolean(),
@@ -36,6 +37,7 @@ export async function savePaymentSettingsAction(
     gateway: formData.get("gateway") as PaymentGatewayType,
     asaasApiKey: String(formData.get("asaasApiKey") ?? "").trim() || null,
     asaasSandbox: formData.get("asaasSandbox") === "on",
+    asaasWebhookToken: String(formData.get("asaasWebhookToken") ?? "").trim() || null,
     mercadoPagoAccessToken: String(formData.get("mercadoPagoAccessToken") ?? "").trim() || null,
     mercadoPagoPublicKey: String(formData.get("mercadoPagoPublicKey") ?? "").trim() || null,
     mercadoPagoSandbox: formData.get("mercadoPagoSandbox") === "on",
@@ -70,6 +72,7 @@ export async function savePaymentSettingsAction(
     gateway: data.gateway,
     asaasApiKey: data.asaasApiKey ?? undefined,
     asaasSandbox: data.asaasSandbox,
+    asaasWebhookToken: data.asaasWebhookToken ?? undefined,
     mercadoPagoAccessToken: data.mercadoPagoAccessToken ?? undefined,
     mercadoPagoPublicKey: data.mercadoPagoPublicKey ?? undefined,
     mercadoPagoSandbox: data.mercadoPagoSandbox,
@@ -103,35 +106,52 @@ export async function testGatewayConnectionAction(): Promise<TestConnectionState
     };
   }
 
-  const gateway = getGatewayByType(settings.gateway);
-
-  try {
-    const result = await gateway.createCheckout({
-      paymentId: "test_" + Date.now(),
-      courseId: "test",
-      courseTitle: "Teste de Conexao",
-      amountInCents: 100,
-      method: "PIX",
-      customer: {
-        name: "Teste",
-        email: "teste@avance.com.br",
-        cpf: "00000000000",
-      },
-    });
-
-    if (result.ok) {
-      return { ok: true, message: `Conexao com ${settings.gateway} funcionando` };
+  if (settings.gateway === "ASAAS") {
+    if (!settings.asaasApiKey) {
+      return { ok: false, message: "API Key nao configurada" };
     }
+    const baseUrl = settings.asaasSandbox
+      ? "https://api-sandbox.asaas.com/v3"
+      : "https://api.asaas.com/v3";
+    const ambiente = settings.asaasSandbox ? "sandbox" : "producao";
 
+    try {
+      const res = await fetch(`${baseUrl}/customers?limit=1`, {
+        headers: { access_token: settings.asaasApiKey },
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        return {
+          ok: true,
+          message: `Conexao com Asaas (${ambiente}) OK. Nenhum dado foi criado.`,
+        };
+      }
+
+      if (res.status === 401) {
+        return {
+          ok: false,
+          message: "API Key invalida (401 Unauthorized). Verifique a chave e o ambiente.",
+        };
+      }
+
+      const body = await res.text().catch(() => "");
+      return {
+        ok: false,
+        message: `Asaas retornou HTTP ${res.status}: ${body.slice(0, 150)}`,
+      };
+    } catch (e) {
+      const error = e as Error;
+      return { ok: false, message: `Erro de rede: ${error.message}` };
+    }
+  }
+
+  if (settings.gateway === "MERCADO_PAGO") {
     return {
       ok: false,
-      message: result.errorMessage || `Falha ao testar ${settings.gateway}`,
-    };
-  } catch (e) {
-    const error = e as Error;
-    return {
-      ok: false,
-      message: `Erro: ${error.message}`,
+      message: "Mercado Pago ainda nao implementado",
     };
   }
+
+  return { ok: false, message: "Gateway desconhecido" };
 }
