@@ -20,7 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type Status = "PAID" | "PENDING" | "FAILED" | "REFUNDED";
-type Gateway = "ASAAS" | "MERCADO_PAGO" | "STRIPE" | "MANUAL";
+type Gateway = "ASAAS" | "MERCADO_PAGO" | "STRIPE" | "MANUAL" | "MOCK";
 
 interface PaymentRow {
   id: string;
@@ -61,6 +61,7 @@ const gatewayLabels: Record<Gateway, string> = {
   MERCADO_PAGO: "Mercado Pago",
   STRIPE: "Stripe",
   MANUAL: "Manual",
+  MOCK: "Mock (testes)",
 };
 
 function formatCurrency(value: number): string {
