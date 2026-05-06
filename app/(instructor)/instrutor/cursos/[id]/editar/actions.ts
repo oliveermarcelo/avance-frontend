@@ -29,7 +29,7 @@ const courseSchema = z.object({
   level: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]),
   categoryId: z.string().min(1, "Categoria e obrigatoria"),
   price: z
-    .number({ invalid_type_error: "Preco invalido" })
+    .number({ error: "Preco invalido" })
     .min(0, "Preco nao pode ser negativo")
     .max(99999),
   isPublished: z.boolean(),
