@@ -227,12 +227,22 @@ export function createAsaasAdapter(config: AsaasConfig): PaymentGateway {
         }
 
         if (input.method === "BOLETO") {
+          // identificationField (linha digitavel) precisa de GET separado
+          let identificationField = "";
+          try {
+            const slip = await asaas<{ identificationField: string }>(
+              `/payments/${payment.id}/identificationField`
+            );
+            identificationField = slip.identificationField ?? "";
+          } catch {
+            // se falhar, segue sem - pdfUrl ainda funciona
+          }
           return {
             ok: true,
             transactionId: payment.id,
             status,
             boleto: {
-              barcode: payment.identificationField ?? "",
+              barcode: identificationField,
               pdfUrl: payment.bankSlipUrl ?? "",
               dueDate: new Date(dueDate),
             },
