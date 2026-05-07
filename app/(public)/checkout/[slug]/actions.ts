@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getPaymentGateway } from "@/lib/payments/factory";
@@ -9,11 +10,17 @@ import { getActiveGateway } from "@/lib/settings";
 import { notifyEnrollmentCreated, notifyPaymentConfirmed } from "@/lib/data/notifications";
 import type { PaymentMethod, CheckoutInput } from "@/lib/payments/types";
 
+const addressSchema = z.object({
+  zipcode: z.string().length(8),
+  number: z.string().min(1).max(10),
+});
+
 const customerSchema = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email().max(160),
   cpf: z.string().min(11).max(14),
   phone: z.string().max(40).optional().nullable(),
+  address: addressSchema.optional(),
 });
 
 const cardSchema = z.object({
@@ -38,6 +45,15 @@ const checkoutSchema = z
       return true;
     },
     { message: "Dados do cartao sao obrigatorios", path: ["card"] }
+  )
+  .refine(
+    (data) => {
+      if (data.method !== "CREDIT_CARD") return true;
+      if (!data.customer.address?.zipcode || !data.customer.address?.number) return false;
+      if (!data.customer.phone || data.customer.phone.length < 10) return false;
+      return true;
+    },
+    { message: "Cartao exige CEP, numero do endereco e telefone", path: ["customer"] }
   );
 
 export type CreateCheckoutState = {
@@ -138,6 +154,12 @@ export async function createCheckoutAction(
     },
   });
 
+  const hdrs = await headers();
+  const remoteIp =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    hdrs.get("x-real-ip") ||
+    undefined;
+
   const checkoutInput: CheckoutInput = {
     paymentId: payment.id,
     courseId: course.id,
@@ -149,8 +171,10 @@ export async function createCheckoutAction(
       email: data.customer.email,
       cpf: data.customer.cpf,
       phone: data.customer.phone ?? undefined,
+      address: data.customer.address,
     },
     card: data.card,
+    remoteIp,
   };
 
   let result;

@@ -70,6 +70,12 @@ function maskExpiry(value: string): string {
   return `${digits.slice(0, 2)}/${digits.slice(2)}`;
 }
 
+function maskCep(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
 function formatPrice(value: number): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -93,6 +99,8 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
   const [installments, setInstallments] = useState(1);
+  const [cep, setCep] = useState("");
+  const [addressNumber, setAddressNumber] = useState("");
 
   const isMockGateway = gatewayName === "MOCK";
 
@@ -126,6 +134,19 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
         setError("CVV invalido");
         return;
       }
+      const cepDigits = cep.replace(/\D/g, "");
+      if (cepDigits.length !== 8) {
+        setError("CEP invalido (8 digitos)");
+        return;
+      }
+      if (!addressNumber.trim()) {
+        setError("Numero do endereco obrigatorio para cartao");
+        return;
+      }
+      if (phone.replace(/\D/g, "").length < 10) {
+        setError("Telefone obrigatorio para cartao (DDD + numero)");
+        return;
+      }
     }
 
     setIsPending(true);
@@ -134,15 +155,19 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
       const formData = new FormData();
       formData.append("courseId", course.id);
       formData.append("method", method);
-      formData.append(
-        "customer",
-        JSON.stringify({
-          name,
-          email,
-          cpf: cpfDigits,
-          phone: phone.replace(/\D/g, "") || null,
-        })
-      );
+      const customerPayload: Record<string, unknown> = {
+        name,
+        email,
+        cpf: cpfDigits,
+        phone: phone.replace(/\D/g, "") || null,
+      };
+      if (method === "CREDIT_CARD") {
+        customerPayload.address = {
+          zipcode: cep.replace(/\D/g, ""),
+          number: addressNumber.trim(),
+        };
+      }
+      formData.append("customer", JSON.stringify(customerPayload));
 
       if (method === "CREDIT_CARD") {
         const expiryParts = cardExpiry.split("/");
@@ -301,6 +326,21 @@ export function CheckoutForm({ course, user, gatewayName }: CheckoutFormProps) {
                 ))}
               </select>
             </div>
+          </div>
+
+          <div className="border-t border-slate-200 pt-4">
+            <p className="text-xs font-semibold text-slate-700 mb-3">Endereco do titular</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2 sm:col-span-1">
+                <Label htmlFor="cep">CEP</Label>
+                <Input id="cep" value={cep} onChange={(e) => setCep(maskCep(e.target.value))} placeholder="00000-000" required disabled={isPending} className="bg-white font-mono" />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="addressNumber">Numero</Label>
+                <Input id="addressNumber" value={addressNumber} onChange={(e) => setAddressNumber(e.target.value)} placeholder="123" required disabled={isPending} className="bg-white" />
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-2">CEP e numero sao exigidos pelo Asaas para validacao antifraude do cartao.</p>
           </div>
         </section>
       )}
